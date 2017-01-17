@@ -75,7 +75,6 @@ Vagrant.configure(2) do |config|
       apt-get update
       apt-get install -y terminator bitcoind virtualenv python3-pip sqlite3
 
-      su - vagrant
       mkdir .bitcoin
       echo "rpcuser=rpcuser" >> .bitcoin/bitcoin.conf
       echo "rpcpassword=#{RPCPASS}" >> .bitcoin/bitcoin.conf
@@ -84,8 +83,8 @@ Vagrant.configure(2) do |config|
       echo "prune=2000" >> .bitcoin/bitcoin.conf
 
       git clone https://github.com/ReinProject/python-rein.git
-      virtualenv venv2
-      . ./venv2/bin/activate      
+      virtualenv pr-venv
+      . ./pr-venv/bin/activate
       cd python-rein
       pip install -r requirements.txt
       python setup.py install
@@ -93,8 +92,8 @@ Vagrant.configure(2) do |config|
       cd ..
 
       git clone https://github.com/ReinProject/causeway.git
-      virtualenv --python=python3 venv3
-      . ./venv3/bin/activate
+      virtualenv --python=python3 c-venv
+      . ./c-venv/bin/activate
       cd causeway
       pip3 install -r requirements.txt
       sqlite3 causeway.db < schema.sql
@@ -115,6 +114,9 @@ Vagrant.configure(2) do |config|
       echo "" >> settings.py
       echo "# Minimum number of confirmations to consider a payment good" >> settings.py
       echo "MINCONF = 1" >> settings.py
+      cd ..
+
+      sudo chown -R vagrant ./
   SHELL
 
 end

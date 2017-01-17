@@ -25,11 +25,15 @@ This will need to download the Ubuntu 16.04 box, then will provision the VM with
 Bitcoin Core is then configured to use the testnet and pruning to 2gb. The Causeway server
 is auto-configured to talk to that Bitcoin Core instance via RPC.
 
-# Final steps
+# Final steps, i.e. Running the above
 
 Each of the following need to run in a shell which you can invoke from your host machine with
 `vagrant ssh` or by opening Terminator inside the VM. The password for the vagrant user is `vagrant`.
-You may want to install screen to make the former option easier.
+You may want to install screen to make the former option more robust.
+
+Run Bitcoin Core:
+
+    bitcoind &
 
 Run Causeway:
 

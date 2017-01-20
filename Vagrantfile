@@ -73,7 +73,8 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: <<-SHELL
       add-apt-repository -y ppa:bitcoin/bitcoin
       apt-get update
-      apt-get install -y terminator bitcoind virtualenv python3-pip sqlite3
+      apt-get install -y terminator bitcoind virtualenv python3-pip sqlite3 libsodium-dev python-dev
+      apt-get remove python-pytest
 
       mkdir .bitcoin
       echo "rpcuser=rpcuser" >> .bitcoin/bitcoin.conf
@@ -81,10 +82,13 @@ Vagrant.configure(2) do |config|
       echo "testnet=1" >> .bitcoin/bitcoin.conf
       echo "server=1" >> .bitcoin/bitcoin.conf
       echo "prune=2000" >> .bitcoin/bitcoin.conf
+      echo "walletnotify=curl -sI --connect-timeout 0.1 http://localhost:62612/walletnotify?%s" >> .bitcoin/bitcoin.conf
+      echo "alertnotify=/usr/bin/wget -q --spider --timeout=0.5 --tries=1 http://localhost:62612/alertnotify?%s" >> .bitcoin/bitcoin.conf
+
 
       git clone https://github.com/ReinProject/python-rein.git
-      virtualenv pr-venv
-      . ./pr-venv/bin/activate
+      virtualenv envpr
+      . ./envpr/bin/activate
       cd python-rein
       pip install -r requirements.txt
       python setup.py install
@@ -92,10 +96,11 @@ Vagrant.configure(2) do |config|
       cd ..
 
       git clone https://github.com/ReinProject/causeway.git
-      virtualenv --python=python3 c-venv
-      . ./c-venv/bin/activate
+      virtualenv --python=python3 envc
+      . ./envc/bin/activate
       cd causeway
       pip3 install -r requirements.txt
+      deactivate
       sqlite3 causeway.db < schema.sql
       echo "SERVER_PORT = 2016" >> settings.py
       echo "DATABASE = '/home/vagrant/causeway/causeway.db'" >> settings.py
@@ -114,6 +119,22 @@ Vagrant.configure(2) do |config|
       echo "" >> settings.py
       echo "# Minimum number of confirmations to consider a payment good" >> settings.py
       echo "MINCONF = 1" >> settings.py
+      cd ..
+
+      virtualenv envjm
+      . ./envjm/bin/activate
+      git clone https://github.com/JoinMarket-Org/joinmarket.git
+      cd joinmarket
+      git checkout develop
+      cp test/regtest_joinmarket.cfg joinmarket.cfg
+      sed -i -e "s/^rpc_user = .*/rpc_user = rpcuser/" joinmarket.cfg
+      sed -i -e "s/^rpc_password = .*/rpc_password = #{RPCPASS}/" joinmarket.cfg
+      git clone https://github.com/JoinMarket-Org/miniircd.git
+      pip install -r requirements.txt
+      pip install pexpect pytest-cov mock
+      echo "test:" >> Makefile
+      echo "   PYTHONPATH=.:/home/vagrant/envjm py.test --cov-report html --btcroot=/usr/bin/bitcoind --btcconf=/home/vagrant/.bitcoin/bitcoin.conf --btcpwd=#{RPCPASS} --nirc=2 --ignore test/test_tumbler.py" >> Makefile
+      deactivate
       cd ..
 
       sudo chown -R vagrant ./

@@ -77,7 +77,7 @@ Vagrant.configure(2) do |config|
       apt-get remove python-pytest
 
       mkdir .bitcoin
-      echo "rpcuser=rpcuser" >> .bitcoin/bitcoin.conf
+      echo "rpcuser=bitcoinrpc" >> .bitcoin/bitcoin.conf
       echo "rpcpassword=#{RPCPASS}" >> .bitcoin/bitcoin.conf
       echo "testnet=1" >> .bitcoin/bitcoin.conf
       echo "server=1" >> .bitcoin/bitcoin.conf
@@ -114,7 +114,7 @@ Vagrant.configure(2) do |config|
       echo "CORE_ENABLED = True" >> settings.py
       echo "SERVER = '127.0.0.1'" >> settings.py
       echo "RPCPORT = 18332" >> settings.py
-      echo "RPCUSER = 'rpcuser'" >> settings.py
+      echo "RPCUSER = 'bitcoinrpc'" >> settings.py
       echo "RPCPASS = '#{RPCPASS}'" >> settings.py
       echo "" >> settings.py
       echo "# Minimum number of confirmations to consider a payment good" >> settings.py
@@ -127,18 +127,26 @@ Vagrant.configure(2) do |config|
       cd joinmarket
       git checkout develop
       cp test/regtest_joinmarket.cfg joinmarket.cfg
-      sed -i -e "s/^rpc_user = .*/rpc_user = rpcuser/" joinmarket.cfg
+      sed -i -e "s/^rpc_user = .*/rpc_user = bitcoinrpc/" joinmarket.cfg
       sed -i -e "s/^rpc_password = .*/rpc_password = #{RPCPASS}/" joinmarket.cfg
-      sed -i -e "s/^rpcuser=.*/rpcuser=rpcuser/" test/bitcoin.conf
+      sed -i -e "s/^rpcuser=.*/rpcuser=bitcoinrpc/" test/bitcoin.conf
       sed -i -e "s/^rpcpassword=.*/rpc_password=#{RPCPASS}/" test/bitcoin.conf
       git clone https://github.com/JoinMarket-Org/miniircd.git
       pip install -r requirements.txt
       pip install pexpect pytest-cov mock
+      
+      echo ".PHONY: all test clean" >> Makefile
+      echo "" >> Makefile
       echo "test:" >> Makefile
-      echo "    PYTHONPATH=.:/home/vagrant/envjm" >> Makefile
-      echo "    py.test --cov-report html --btcroot=/usr/bin/ --btcconf=/home/vagrant/.bitcoin/bitcoin.conf --btcpwd=#{RPCPASS} --nirc=2 --ignore test/test_tumbler.py" >> Makefile
+      echo -e "\tPYTHONPATH=.:/home/vagrant/envjm" >> Makefile
+      echo -e "\tpy.test --cov-report html --btcroot=/usr/bin/ --btcconf=/home/vagrant/.bitcoin/bitcoin.conf --btcpwd=#{RPCPASS} --nirc=2 --ignore test/test_tumbler.py" >> Makefile
       deactivate
       cd ..
+      # Steps to test joinmarket in regtest mode once this box is up:
+      # comment out testnet=1 line in /home/vagrant/.bitcoin/bitcoin.conf
+      # . envjm/bin/activate
+      # cd joinmarket
+      # make test
 
       sudo chown -R vagrant ./
   SHELL

@@ -129,11 +129,14 @@ Vagrant.configure(2) do |config|
       cp test/regtest_joinmarket.cfg joinmarket.cfg
       sed -i -e "s/^rpc_user = .*/rpc_user = rpcuser/" joinmarket.cfg
       sed -i -e "s/^rpc_password = .*/rpc_password = #{RPCPASS}/" joinmarket.cfg
+      sed -i -e "s/^rpcuser=.*/rpcuser=rpcuser/" test/bitcoin.conf
+      sed -i -e "s/^rpcpassword=.*/rpc_password=#{RPCPASS}/" test/bitcoin.conf
       git clone https://github.com/JoinMarket-Org/miniircd.git
       pip install -r requirements.txt
       pip install pexpect pytest-cov mock
       echo "test:" >> Makefile
-      echo "   PYTHONPATH=.:/home/vagrant/envjm py.test --cov-report html --btcroot=/usr/bin/bitcoind --btcconf=/home/vagrant/.bitcoin/bitcoin.conf --btcpwd=#{RPCPASS} --nirc=2 --ignore test/test_tumbler.py" >> Makefile
+      echo "    PYTHONPATH=.:/home/vagrant/envjm" >> Makefile
+      echo "    py.test --cov-report html --btcroot=/usr/bin/ --btcconf=/home/vagrant/.bitcoin/bitcoin.conf --btcpwd=#{RPCPASS} --nirc=2 --ignore test/test_tumbler.py" >> Makefile
       deactivate
       cd ..
 

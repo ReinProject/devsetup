@@ -1,6 +1,6 @@
 # devsetup
 
-Setup a development environment using VirtualBox and Vagrant - includes client, server, bitcoind from ppa with pruning and testnet
+Setup a development environment for apps around Bitcoin using VirtualBox and Vagrant - includes Rein client and server, bitcoind from ppa with pruning and testnet, JoinMarket develop branch.
 
 # Installation
 

@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "boxcutter/ubuntu1604-desktop"
+  config.vm.box = "bstoots/xubuntu-16.04-desktop-amd64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -71,9 +71,13 @@ Vagrant.configure(2) do |config|
   RPCPASS = [*('A'..'Z')].sample(32).join
 
   config.vm.provision "shell", inline: <<-SHELL
+
+      # network connectivity unreliable, add time for net to start
+      sleep 30s
+
       add-apt-repository -y ppa:bitcoin/bitcoin
       apt-get update
-      apt-get install -y terminator bitcoind virtualenv python3-pip sqlite3 libsodium-dev python-dev
+      apt-get install -y terminator bitcoind virtualenv python3-pip sqlite3 libsodium-dev python-dev git-core
       apt-get remove python-pytest
 
       mkdir .bitcoin
@@ -103,7 +107,7 @@ Vagrant.configure(2) do |config|
       deactivate
       sqlite3 causeway.db < schema.sql
       echo "SERVER_PORT = 2016" >> settings.py
-      echo "DATABASE = '/home/vagrant/causeway/causeway.db'" >> settings.py
+      echo "DATABASE_URI = 'sqlite:///home/vagrant/causeway/causeway.db'" >> settings.py
       echo "DEBUG = True" >> settings.py
       echo "TESTNET = True" >> settings.py
       echo "DATA_DIR = ''" >> settings.py
@@ -148,7 +152,7 @@ Vagrant.configure(2) do |config|
       # cd joinmarket
       # make test
 
-      sudo chown -R vagrant ./
+      sudo chown -R vagrant .bitcoin envpr python-rein envc causeway envjm joinmarket
   SHELL
 
 end
